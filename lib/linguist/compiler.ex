@@ -38,7 +38,7 @@ defmodule Linguist.Compiler do
   @simple_interpol "%{"
 
   def compile(translations) do
-    langs = Dict.keys translations
+    langs = Keyword.keys translations
     translations =
       for {locale, source} <- translations do
         deftranslations(to_string(locale), "", source)
@@ -78,11 +78,11 @@ defmodule Linguist.Compiler do
   end
 
   defp interpolate(string, var) do
-    @interpol_rgx 
+    @interpol_rgx
       |> Regex.split(string, on: [:head, :tail])
       |> Enum.reduce( "", fn
       <<"%{" <> rest>>, acc ->
-        key      = String.to_atom(String.rstrip(rest, ?}))
+        key      = String.to_atom(String.trim_trailing(rest, "}"))
         bindings = Macro.var(var, __MODULE__)
         quote do
           unquote(acc) <> to_string(Dict.fetch!(unquote(bindings), unquote(key)))
